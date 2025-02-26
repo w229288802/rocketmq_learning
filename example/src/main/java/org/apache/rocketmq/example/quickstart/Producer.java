@@ -37,7 +37,7 @@ public class Producer {
     public static final String TAG = "TagA";
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-
+        //PS: （例）生产Demo
         /*
          * Instantiate with a producer group name.
          */
@@ -54,7 +54,9 @@ public class Producer {
          * </pre>
          */
         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
-//        producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+        //PS: 设置Nameserv
+        producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+
 
         /*
          * Launch the instance.

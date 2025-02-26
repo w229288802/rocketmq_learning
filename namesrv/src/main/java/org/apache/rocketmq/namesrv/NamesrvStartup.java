@@ -23,6 +23,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import org.apache.commons.cli.CommandLine;
@@ -48,6 +49,14 @@ public class NamesrvStartup {
     private static CommandLine commandLine = null;
 
     public static void main(String[] args) {
+        //1.在ROCKETMQ_HOME中添加conf目录
+        //2.从RocketMQ distribution部署目录中将broker.conf、logback_broker.xml、logback_namesrv.xml等文件复制到conf目录
+        String rocketmqHome = Objects.requireNonNull(NamesrvStartup.class.getResource("/"))
+                .getPath().replace("/namesrv/target/classes/", "/deploy");
+        //PS: （一）NameServ启动
+        //PS: 1、设置用户HOME目录，logback.xml从这个路径找。
+        System.setProperty("user.home", rocketmqHome);
+        System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY, rocketmqHome);
         main0(args);
     }
 

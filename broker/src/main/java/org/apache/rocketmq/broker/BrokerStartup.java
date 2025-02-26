@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,6 +55,19 @@ public class BrokerStartup {
     public static InternalLogger log;
 
     public static void main(String[] args) {
+        //1.在ROCKETMQ_HOME中添加conf目录
+        //2.从RocketMQ distribution部署目录中将broker.conf、logback_broker.xml、logback_namesrv.xml等文件复制到conf目录
+        //3.在broker.conf添加配置
+        String rocketmqHome = Objects.requireNonNull(BrokerStartup.class.getResource("/"))
+                .getPath().replace("/broker/target/classes/", "/deploy");
+        //PS: （二）Broker启动
+        //PS: 1、设置用户HOME目录，logback.xml从这个路径找。
+        System.setProperty("user.home", rocketmqHome);
+        System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY, rocketmqHome);
+        //PS: 2、设置-c参数，broker.xml从这个路径找。
+        args = new String[]{"-c",rocketmqHome+"/conf/broker.conf"};
+        //PS: 3、设置磁盘空间警戒阈值，超过这个值则停止接受消息，默认值90
+        System.setProperty("rocketmq.broker.diskSpaceWarningLevelRatio","0.99");
         start(createBrokerController(args));
     }
 
@@ -112,6 +126,7 @@ public class BrokerStartup {
                 messageStoreConfig.setAccessMessageInMemoryMaxRatio(ratio);
             }
 
+            //@ps:aa
             if (commandLine.hasOption('c')) {
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {

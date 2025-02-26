@@ -22,6 +22,8 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * This example shows how to subscribe and consume messages using providing {@link DefaultMQPushConsumer}.
  */
@@ -33,10 +35,13 @@ public class Consumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
+        //PS: （例）消费Demo
         /*
          * Instantiate with specified consumer group name.
          */
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(CONSUMER_GROUP);
+        //PS: 设置Nameserv
+        consumer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
 
         /*
          * Specify name server addresses.
@@ -65,8 +70,9 @@ public class Consumer {
         /*
          *  Register callback to execute on arrival of messages fetched from brokers.
          */
+        AtomicInteger atomicInteger = new AtomicInteger(0);
         consumer.registerMessageListener((MessageListenerConcurrently) (msg, context) -> {
-            System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msg);
+            System.out.printf("Num:%s, %s Receive New Messages: %s %n", atomicInteger.addAndGet(1), Thread.currentThread().getName(), msg);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         });
 
