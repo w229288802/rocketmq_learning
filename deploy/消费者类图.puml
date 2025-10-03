@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+interface MQAdmin
+interface MQConsumer
+interface MQPullConsumer
+interface MQPushConsumer
+interface MQConsumerInner
+class MQClientFactory
+class DefaultMQPullConsumer{
+    -defaultMQPullConsumerImpl
+}
+class DefaultMQPushConsumer{
+    -defaultMQPushConsumerImpl
+}
+class ClientConfig
+class DefaultMQPullConsumerImpl{
+    -mqClientFactory
+}
+class DefaultMQPushConsumerImpl{
+    -mqClientFactory
+}
+DefaultMQPullConsumer::defaultMQPullConsumerImpl --> DefaultMQPullConsumerImpl
+DefaultMQPushConsumer::defaultMQPushConsumerImpl --> DefaultMQPushConsumerImpl
+DefaultMQPullConsumerImpl::mqClientFactory --> MQClientFactory
+DefaultMQPushConsumerImpl::mqClientFactory --> MQClientFactory
+
+MQAdmin <-- MQConsumer
+MQConsumer <-- MQPullConsumer
+MQConsumer <-- MQPushConsumer
+ClientConfig <|-- DefaultMQPullConsumer
+ClientConfig <|-- DefaultMQPushConsumer
+MQPullConsumer <.. DefaultMQPullConsumer
+MQPushConsumer <.. DefaultMQPushConsumer
+MQConsumerInner <.. DefaultMQPullConsumerImpl
+MQConsumerInner <.. DefaultMQPushConsumerImpl
+
+@enduml

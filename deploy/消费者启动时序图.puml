@@ -1,0 +1,27 @@
+@startuml
+skinparam maxMessageSize 3000
+participant DefaultMQPushConsumer
+participant DefaultMQPushConsumerImpl
+participant MQClientInstance
+
+DefaultMQPushConsumer -> DefaultMQPushConsumerImpl : start()
+activate DefaultMQPushConsumerImpl
+
+DefaultMQPushConsumerImpl -> DefaultMQPushConsumerImpl : checkConfig()
+
+DefaultMQPushConsumerImpl -> DefaultMQPushConsumerImpl :  copySubscription() -- add Topic info to rebalanceImpl
+
+DefaultMQPushConsumerImpl -> DefaultMQPushConsumerImpl : 1.create MQClient \n2.create PullAPIWrapper \n3.create OffsetStore \n4.create ConsumeMessageService
+
+DefaultMQPushConsumerImpl -> MQClientInstance: start()
+activate MQClientInstance
+DefaultMQPushConsumerImpl <-- MQClientInstance
+deactivate MQClientInstance
+
+
+DefaultMQPushConsumerImpl -> MQClientInstance: rebalanceImmediately()
+activate MQClientInstance
+DefaultMQPushConsumerImpl <-- MQClientInstance
+deactivate MQClientInstance
+
+@enduml
