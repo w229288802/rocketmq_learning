@@ -153,6 +153,9 @@ public abstract class NettyRemotingAbstract {
     public void processMessageReceived(ChannelHandlerContext ctx, RemotingCommand msg) throws Exception {
         final RemotingCommand cmd = msg;
         if (cmd != null) {
+            //PS:
+            //PS:（五）消息接收处理 -> NettyRemotingAbstract # processMessageReceived
+            //PS: 1、RemotingCommand分发
             switch (cmd.getType()) {
                 case REQUEST_COMMAND:
                     processRequestCommand(ctx, cmd);
@@ -193,8 +196,10 @@ public abstract class NettyRemotingAbstract {
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
         final int opaque = cmd.getOpaque();
-
+        //PS:
+        //PS:（五）消息接收处理 -> NettyRemotingAbstract # processMessageReceived -> processRequestCommand
         if (pair != null) {
+            //PS: 1、如果有 NettyRequestProcessor，则创建Runnable
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
@@ -222,6 +227,7 @@ public abstract class NettyRemotingAbstract {
                                 }
                             }
                         };
+                        //PS: 4、调用 NettyRequestProcessor 处理 RemotingCommand
                         if (pair.getObject1() instanceof AsyncNettyRequestProcessor) {
                             AsyncNettyRequestProcessor processor = (AsyncNettyRequestProcessor)pair.getObject1();
                             processor.asyncProcessRequest(ctx, cmd, callback);
@@ -243,7 +249,7 @@ public abstract class NettyRemotingAbstract {
                     }
                 }
             };
-
+            //PS: 2、拒绝请求
             if (pair.getObject1().rejectRequest()) {
                 final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY,
                     "[REJECTREQUEST]system busy, start flow control for a while");
@@ -251,7 +257,7 @@ public abstract class NettyRemotingAbstract {
                 ctx.writeAndFlush(response);
                 return;
             }
-
+            //PS: 3、提交Runnable
             try {
                 final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
                 pair.getObject2().submit(requestTask);

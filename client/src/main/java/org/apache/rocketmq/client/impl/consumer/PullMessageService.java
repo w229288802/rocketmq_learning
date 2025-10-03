@@ -89,10 +89,12 @@ public class PullMessageService extends ServiceThread {
     @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
-
+        //PS:（八）消息拉取服务
         while (!this.isStopped()) {
             try {
+                //PS:  从拉取请求队列中获取一个拉取请求
                 PullRequest pullRequest = this.pullRequestQueue.take();
+                //PS:  执行拉取消息请求, 根据消费者组获取DefaultMQPushConsumerImpl,然后调用pullMessage方法
                 this.pullMessage(pullRequest);
             } catch (InterruptedException ignored) {
             } catch (Exception e) {

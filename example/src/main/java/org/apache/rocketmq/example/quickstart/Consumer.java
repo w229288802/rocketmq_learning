@@ -35,7 +35,7 @@ public class Consumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
-        //PS: （例）消费Demo
+        //PS:（例）消费Demo
         /*
          * Instantiate with specified consumer group name.
          */
@@ -60,6 +60,9 @@ public class Consumer {
         /*
          * Specify where to start in case the specific consumer group is a brand-new one.
          */
+        //如果一个消费者组之前已经启动过，再次启动后，无论consumeFromWhere设置何值，都会根据在broker记录的offset进行消费
+        //如果是一个新启动的消费者组，且消费者组订阅的消息仍在broker的内存中，无论consumeFromWhere设置何值，都将从0开始消费
+        //如果是一个新启动的消费者组，且消费者组订阅的消息不在broker的内存中，根据consumeFromWhere设置的获取对应的offset进行消费
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 
         /*

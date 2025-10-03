@@ -61,13 +61,14 @@ public class BrokerStartup {
         String rocketmqHome = Objects.requireNonNull(BrokerStartup.class.getResource("/"))
                 .getPath().replace("/broker/target/classes/", "/deploy");
         //PS: （二）Broker启动
-        //PS: 1、设置用户HOME目录，logback.xml从这个路径找。
+        //设置用户HOME目录，logback.xml从这个路径找。
         System.setProperty("user.home", rocketmqHome);
         System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY, rocketmqHome);
-        //PS: 2、设置-c参数，broker.xml从这个路径找。
+        //设置-c参数，broker.xml从这个路径找。
         args = new String[]{"-c",rocketmqHome+"/conf/broker.conf"};
-        //PS: 3、设置磁盘空间警戒阈值，超过这个值则停止接受消息，默认值90
+        //设置磁盘空间警戒阈值，超过这个值则停止接受消息，默认值90
         System.setProperty("rocketmq.broker.diskSpaceWarningLevelRatio","0.99");
+        //PS: 1、创建并启动Controller
         start(createBrokerController(args));
     }
 

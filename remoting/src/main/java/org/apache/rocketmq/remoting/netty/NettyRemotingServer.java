@@ -182,6 +182,9 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     @Override
     public void start() {
+        //PS:
+        //PS:（二）Broker启动--Controller启动--RemotingServer启动。
+        //remotingServer是一个netty服务，他开启了一个端口用来处理producer与consumer的网络请求。
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
             nettyServerConfig.getServerWorkerThreads(),
             new ThreadFactory() {
@@ -193,9 +196,9 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                     return new Thread(r, "NettyServerCodecThread_" + this.threadIndex.incrementAndGet());
                 }
             });
-
+        //PS: 1、准备Netty的Handler，例如 NettyServerHandler用于消息接收处理
         prepareSharableHandlers();
-
+        //PS: 2、创建Netty ServerBootstrap。
         ServerBootstrap childHandler =
             this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
                 .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
@@ -203,6 +206,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.SO_KEEPALIVE, false)
                 .childOption(ChannelOption.TCP_NODELAY, true)
+                    //PS: 3、绑定Socket端口
                 .localAddress(new InetSocketAddress(this.nettyServerConfig.getListenPort()))
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -211,6 +215,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                             .addLast(defaultEventExecutorGroup, HANDSHAKE_HANDLER_NAME, handshakeHandler)
                             .addLast(defaultEventExecutorGroup,
                                 encoder,
+                                //PS: 4、pipeline中添加NettyDecoder，解码消息转换成RemotingCommand
                                 new NettyDecoder(),
                                 new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
                                 connectionManageHandler,
@@ -238,6 +243,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         }
 
         try {
+            //PS: 3、启动Netty Server。
             ChannelFuture sync = this.serverBootstrap.bind().sync();
             InetSocketAddress addr = (InetSocketAddress) sync.channel().localAddress();
             this.port = addr.getPort();
@@ -424,12 +430,14 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             ctx.fireChannelRead(msg.retain());
         }
     }
-
+    //PS:
+    //PS:（五）消息接收处理
     @ChannelHandler.Sharable
     class NettyServerHandler extends SimpleChannelInboundHandler<RemotingCommand> {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, RemotingCommand msg) throws Exception {
+            //PS: 1、NettyServerHandler中调用抽象父类NettyRemotingAbstract的方法处理RemotingCommand
             processMessageReceived(ctx, msg);
         }
     }

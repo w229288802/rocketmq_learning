@@ -577,7 +577,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             callTimeout = true;
                             break;
                         }
-                        //PS: 4、根据communicationMode进行消息发送（1、单向，2、同步，3、异步）
+                        //PS: 4、通过 MQClientAPIImpl 进行消息发送（1、单向，2、同步，3、异步）
                         sendResult = this.sendKernelImpl(msg, mq, communicationMode, sendCallback, topicPublishInfo, timeout - costTime);
                         endTimestamp = System.currentTimeMillis();
                         this.updateFaultItem(mq.getBrokerName(), endTimestamp - beginTimestampPrev, false);

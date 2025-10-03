@@ -848,11 +848,12 @@ public class BrokerController {
         if (this.messageStore != null) {
             this.messageStore.start();
         }
-
+        //PS:（二）Broker启动-Controller启动
+        //PS: 1、启动RemotingServer
         if (this.remotingServer != null) {
             this.remotingServer.start();
         }
-
+        //PS: 2、启动FastRemotingServer
         if (this.fastRemotingServer != null) {
             this.fastRemotingServer.start();
         }

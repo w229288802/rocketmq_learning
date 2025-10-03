@@ -266,6 +266,8 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor {
     private CompletableFuture<RemotingCommand> asyncSendMessage(ChannelHandlerContext ctx, RemotingCommand request,
                                                                 SendMessageContext mqtraceContext,
                                                                 SendMessageRequestHeader requestHeader) {
+        //PS:
+        //PS:（五）消息接收处理 => NettyRemotingAbstract # processMessageReceived => processRequestCommand => SendMessageProcessor # processRequest
         final RemotingCommand response = preSend(ctx, request, requestHeader);
         final SendMessageResponseHeader responseHeader = (SendMessageResponseHeader)response.readCustomHeader();
 
@@ -277,25 +279,30 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor {
 
         int queueIdInt = requestHeader.getQueueId();
         TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
-
+        //PS:  如果没指定队列，就随机指定一个队列
         if (queueIdInt < 0) {
             queueIdInt = randomQueueId(topicConfig.getWriteQueueNums());
         }
-
+        //PS:  将消息包装为 MessageExtBrokerInner
         MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
+        //PS:  设置主题
         msgInner.setTopic(requestHeader.getTopic());
+        //PS:  设置队列
         msgInner.setQueueId(queueIdInt);
 
         if (!handleRetryAndDLQ(requestHeader, response, request, msgInner, topicConfig)) {
             return CompletableFuture.completedFuture(response);
         }
-
+        //PS:  设置消息体
         msgInner.setBody(body);
         msgInner.setFlag(requestHeader.getFlag());
+        //PS:  设置消息属性
         Map<String, String> origProps = MessageDecoder.string2messageProperties(requestHeader.getProperties());
         MessageAccessor.setProperties(msgInner, origProps);
         msgInner.setBornTimestamp(requestHeader.getBornTimestamp());
+        //PS:  设置发送消息的主机地址
         msgInner.setBornHost(ctx.channel().remoteAddress());
+        //PS:  设置存储消息的主机地址
         msgInner.setStoreHost(this.getStoreHost());
         msgInner.setReconsumeTimes(requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes());
         String clusterName = this.brokerController.getBrokerConfig().getBrokerClusterName();
@@ -321,10 +328,13 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor {
                                 + "] sending transaction message is forbidden");
                 return CompletableFuture.completedFuture(response);
             }
+            //PS:  调用 TransactionalMessageService 处理事务消息的Prepare消息
             putMessageResult = this.brokerController.getTransactionalMessageService().asyncPrepareMessage(msgInner);
         } else {
+            //PS:  调用 MessageStore 处理普通消息和事务消息的commit/rollback消息的存储
             putMessageResult = this.brokerController.getMessageStore().asyncPutMessage(msgInner);
         }
+        //PS:  CompleteFuture结果处理
         return handlePutMessageResultFuture(putMessageResult, response, request, msgInner, responseHeader, mqtraceContext, ctx, queueIdInt);
     }
 

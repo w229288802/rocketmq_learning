@@ -37,7 +37,7 @@ public class Producer {
     public static final String TAG = "TagA";
 
     public static void main(String[] args) throws MQClientException, InterruptedException {
-        //PS: （例）生产Demo
+        //PS:（例）生产Demo
         /*
          * Instantiate with a producer group name.
          */
@@ -63,7 +63,7 @@ public class Producer {
          */
         producer.start();
 
-        for (int i = 0; i < MESSAGE_COUNT; i++) {
+        for (int i = 0; i < 1; i++) {
             try {
 
                 /*
@@ -77,6 +77,7 @@ public class Producer {
                 /*
                  * Call send message to deliver message to one of brokers.
                  */
+                producer.setRetryTimesWhenSendFailed(3);
                 SendResult sendResult = producer.send(msg);
                 /*
                  * There are different ways to send message, if you don't care about the send result,you can use this way

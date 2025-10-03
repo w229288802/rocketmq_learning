@@ -240,8 +240,10 @@ public class MQClientInstance {
                     // Start various schedule tasks
                     this.startScheduledTask();
                     // Start pull service
+                    //PS:  启动拉取消费服务
                     this.pullMessageService.start();
                     // Start rebalance service
+                    //PS:  启动重平衡服务
                     this.rebalanceService.start();
                     // Start push service
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);

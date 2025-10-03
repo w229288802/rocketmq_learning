@@ -208,15 +208,17 @@ public class MappedFile extends ReferenceResource {
             PutMessageContext putMessageContext) {
         return appendMessagesInner(messageExtBatch, cb, putMessageContext);
     }
-
+    //将消息追加到MappedFile文件中
     public AppendMessageResult appendMessagesInner(final MessageExt messageExt, final AppendMessageCallback cb,
             PutMessageContext putMessageContext) {
         assert messageExt != null;
         assert cb != null;
-
+        //PS:（六）MessageStore消息存储 => CommitLog # asyncPutMessage => MappedFile # appendMessagesInner
+        //PS:  获取当前MappedFile的写入位置
         int currentPos = this.wrotePosition.get();
-
+        //PS:  如果当前写入位置小于等于文件大小
         if (currentPos < this.fileSize) {
+            //PS:  异步刷盘有两种模式，如果开启了堆外内存，则使用writeBuffer，否则使用mappedByteBuffer
             ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
             byteBuffer.position(currentPos);
             AppendMessageResult result;
@@ -233,6 +235,7 @@ public class MappedFile extends ReferenceResource {
             this.storeTimestamp = result.getStoreTimestamp();
             return result;
         }
+        //PS:  如果当前写入位置大于或等于文件大小，表明文件已写满，抛出异常
         log.error("MappedFile.appendMessage return null, wrotePosition: {} fileSize: {}", currentPos, this.fileSize);
         return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
     }
